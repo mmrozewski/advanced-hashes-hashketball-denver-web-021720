@@ -1,6 +1,7 @@
 require 'spec_helper'
+require_relative '../hashketball'
 
-describe 'hashketball' do
+describe '../hashketball' do
 
   describe '#game_hash' do
     let(:top_level_keys) { [:home, :away] }
