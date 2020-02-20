@@ -1,9 +1,10 @@
 require 'pry'
-require './spec/hashketball_spec.rb'
+
 
 def game_hash
   {
-    away: { team_name: 'Charlotte Hornets',
+    away: 
+    { team_name: 'Charlotte Hornets',
       colors: %w[Turquoise Purple],
       players: [
         { player_name: 'Jeff Adrien',
@@ -104,81 +105,100 @@ def game_hash
   }
 end
 
+def players
+  game_hash[:away][:players].concat(game_hash[:home][:players])
+end
 
-def num_points_scored(player_search)
-  game_hash.each do |team, team_info|
-    team_info[:players].each do |player|
-      if player[:player_name] == player_search
-        return player[:points]
-      end
-    end
+def teams
+  game_hash.values 
+end
+
+def find_player(name)
+  players.find do |player|
+    player[:player_name] == name
   end
+end
+
+
+def find_players_of_team(name)
+  teams.find do |team|
+    team[:team_name] == name
+  end[:players]
+end
+
+
+def num_points_scored(name)
+  find_player(name)[:points]
+end
+
+def sum_points_team(name)
+  find_players_of_team(name).reduce(0) do |sum, player|
+    sum + player[:points]
+  end
+end 
+
+def array_player_names
+  players.map {|players| players.values[0]}
 end
 
 def shoe_size(name)
-  game_hash.each do |team, team_info|
-    team_info[:players].each do |player|
-      if player[:player_name] == name
-        return player[:shoe]
-      end
-    end
-  end
+  find_player(name)[:shoe]
 end
+
 
 def team_colors(team_input)
-  if team_input.downcase == "charlotte hornets" 
-    return game_hash[:away][:colors]
-  else return game_hash[:home][:colors]
-  end
+  teams.find do |team|
+    team[:team_name] == team_input
+  end[:colors]
 end
+
+ 
 
 def team_names
-  game_hash.map do |team, team_info|
-    team_info[:team_name]
+  teams.map do |team|
+    team[:team_name]
   end
 end
+
+
 
 def player_numbers(input)
-  output = []
-  game_hash.each do |team, team_info|
-    if team_info[:team_name] == input 
-      team_info.each do |key, value|
-        if key == :players
-          value.each do |player|
-          output.push(player[:number])
-          end
-        end
-      end
-    end
+  find_players_of_team(input).map do |player|
+    player[:number]
   end
-  return output
 end
+
+
 
 def player_stats(input)
-  game_hash.each do |team, team_info|
-    team_info.each do |key, value|
-      if key == :players
-        value.each do |player|
-          if input == player[:player_name]
-            player.delete(:player_name) # having player name inside the hash was a bad idea!
-            return player
-          end
-        end
-      end
-    end
+  find_player(input).tap { |stats| stats.delete(:player_name) }
+end
+
+
+
+def big_shoe_rebounds
+  players.max_by {|player| player[:shoe]}[:rebounds]
+end
+
+def most_points_scored
+  players.max_by {|player| player[:points]}[:player_name]
+end
+
+def winning_team
+  if sum_points_team("Charlotte Hornets") > sum_points_team("Brooklyn Nets")
+    "Charlotte Hornets"
+  else
+    "Brooklyn Nets"
   end
 end
 
-def big_shoe_rebounds
-  big_shoe = 0
-  rebounds = 0
-  game_hash.each do |team, team_info|
-    team_info[:players].each do |player|
-      if player[:shoe] > big_shoe
-        big_shoe = player[:shoe]
-        rebounds = player[:rebounds]
-      end
-    end
-  end
-  return rebounds
+def player_with_longest_name
+  array_player_names.max_by do |player| 
+    player.length
+  end 
 end
+
+def long_name_steals_a_ton?
+  player_with_longest_name == players.max_by {|player| player[:steals]}[:player_name]
+end
+
